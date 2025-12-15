@@ -1,716 +1,286 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Memory Game — 3 Niveles</title>
-    <style>
-        /* ========== CSS ========== */
-        :root {
-            --bg: #0f1724;
-            --accent: #ffb703;
-            --glass: rgba(255, 255, 255, 0.06);
-            --success: #16a34a;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memory Game 3 Niveles</title>
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+<style>
+/* =================== CSS =================== */
+body {
+  font-family: Arial, sans-serif;
+  background: linear-gradient(180deg,#0f172a,#020617);
+  color: white;
+  text-align: center;
+  margin: 0;
+  padding: 20px;
+}
 
-        body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background: linear-gradient(180deg, #071032, #10203a);
-            color: #e6eef8;
-            min-height: 100vh;
-            padding: 20px;
-        }
+h1 { margin-bottom: 10px; }
 
-        .app {
-            max-width: 1100px;
-            margin: 0 auto;
-            background: rgba(255, 255, 255, 0.03);
-            padding: 25px;
-            border-radius: 16px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
+.controls {
+  margin: 10px 0 20px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
 
-        header {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: center;
-            gap: 20px;
-            margin-bottom: 25px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
+select, button {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+}
 
-        .title {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
+button {
+  background: #fbbf24;
+  font-weight: bold;
+}
 
-        .logo {
-            width: 60px;
-            height: 60px;
-            background: var(--glass);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            font-weight: bold;
-            color: var(--accent);
-        }
+.status {
+  margin-bottom: 15px;
+  font-size: 14px;
+}
 
-        h1 {
-            font-size: 28px;
-            background: linear-gradient(135deg, #ffb703, #ff8c00);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 5px;
-        }
+.board {
+  display: grid;
+  gap: 12px;
+  justify-content: center;
+  margin: auto;
+}
 
-        .subtitle {
-            color: #94a3b8;
-            font-size: 14px;
-        }
+.board.level-1 { grid-template-columns: repeat(3, 100px); }
+.board.level-2 { grid-template-columns: repeat(4, 100px); }
+.board.level-3 { grid-template-columns: repeat(6, 90px); }
 
-        .controls {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            align-items: center;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 15px;
-            border-radius: 12px;
-        }
+.card {
+  width: 100px;
+  height: 120px;
+  perspective: 1000px;
+  cursor: pointer;
+}
 
-        .controls label {
-            font-size: 14px;
-            color: #94a3b8;
-        }
+.card-inner {
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
 
-        select, button {
-            padding: 10px 15px;
-            border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            background: rgba(255, 255, 255, 0.08);
-            color: white;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
+.card.flipped .card-inner {
+  transform: rotateY(180deg);
+}
 
-        select:hover, button:hover {
-            background: rgba(255, 255, 255, 0.15);
-            transform: translateY(-2px);
-        }
+.card-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  backface-visibility: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-        .btn-ghost {
-            background: transparent;
-            border: 1px solid var(--accent);
-            color: var(--accent);
-        }
+.card-back {
+  background: linear-gradient(135deg,#6366f1,#9333ea);
+  font-size: 36px;
+}
 
-        .btn-ghost:hover {
-            background: rgba(255, 183, 3, 0.1);
-        }
+.card-front {
+  background: white;
+  transform: rotateY(180deg);
+}
 
-        .primary {
-            background: var(--accent);
-            border: none;
-            color: #000;
-            font-weight: 600;
-        }
+.card-front img {
+  width: 90%;
+  height: 90%;
+  object-fit: contain;
+}
 
-        .primary:hover {
-            background: #ffa703;
-            box-shadow: 0 4px 15px rgba(255, 183, 3, 0.3);
-        }
+/* Modal */
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.7);
+  align-items: center;
+  justify-content: center;
+}
 
-        .status {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            justify-content: center;
-            margin-bottom: 30px;
-        }
+.modal.show { display: flex; }
 
-        .chip {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 12px 20px;
-            border-radius: 50px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .chip span {
-            font-weight: bold;
-            color: var(--accent);
-            font-size: 16px;
-        }
-
-        .board {
-            display: grid;
-            gap: 15px;
-            justify-content: center;
-            margin: 30px 0;
-            min-height: 400px;
-        }
-
-        .board.level-1 {
-            grid-template-columns: repeat(3, 130px);
-        }
-
-        .board.level-2 {
-            grid-template-columns: repeat(4, 120px);
-        }
-
-        .board.level-3 {
-            grid-template-columns: repeat(6, 110px);
-        }
-
-        .card {
-            perspective: 1000px;
-            height: 160px;
-        }
-
-        .card-inner {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            transform-style: preserve-3d;
-            transition: transform 0.6s;
-            cursor: pointer;
-        }
-
-        .card.flipped .card-inner {
-            transform: rotateY(180deg);
-        }
-
-        .card.matched .card-inner {
-            transform: rotateY(180deg);
-            cursor: default;
-            opacity: 0.8;
-        }
-
-        .card-face {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            backface-visibility: hidden;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-        }
-
-        .card-back {
-            background: linear-gradient(135deg, #2b6cb0, #805ad5);
-            font-size: 36px;
-            color: white;
-            border: 3px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .card-front {
-            background: white;
-            transform: rotateY(180deg);
-            border: 3px solid var(--accent);
-        }
-
-        .card-front img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            padding: 10px;
-        }
-
-        footer {
-            text-align: center;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            backdrop-filter: blur(5px);
-        }
-
-        .modal.show {
-            display: flex;
-        }
-
-        .dialog {
-            background: linear-gradient(135deg, #1e293b, #0f172a);
-            padding: 30px;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 500px;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-        }
-
-        .dialog h2 {
-            color: var(--accent);
-            margin-bottom: 15px;
-            font-size: 28px;
-        }
-
-        .dialog p {
-            color: #cbd5e1;
-            line-height: 1.6;
-            margin-bottom: 25px;
-            font-size: 16px;
-        }
-
-        @media (max-width: 768px) {
-            .board.level-1 {
-                grid-template-columns: repeat(3, 100px);
-            }
-            
-            .board.level-2 {
-                grid-template-columns: repeat(4, 85px);
-            }
-            
-            .board.level-3 {
-                grid-template-columns: repeat(4, 80px);
-            }
-            
-            .card {
-                height: 120px;
-            }
-            
-            header {
-                flex-direction: column;
-                text-align: center;
-            }
-            
-            .controls {
-                justify-content: center;
-            }
-            
-            .chip {
-                padding: 8px 15px;
-                font-size: 12px;
-            }
-            
-            .chip span {
-                font-size: 14px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .board.level-1,
-            .board.level-2,
-            .board.level-3 {
-                grid-template-columns: repeat(3, 80px);
-            }
-            
-            .card {
-                height: 100px;
-            }
-            
-            .card-back {
-                font-size: 24px;
-            }
-        }
-    </style>
+.dialog {
+  background: #020617;
+  padding: 25px;
+  border-radius: 15px;
+  max-width: 320px;
+}
+</style>
 </head>
+
 <body>
-    <!-- ========== HTML ========== -->
-    <div class="app">
-        <header>
-            <div class="title">
-                <div class="logo">M</div>
-                <div>
-                    <h1>Memory Game — 3 Niveles</h1>
-                    <div class="subtitle">Modo 1 o 2 jugadores</div>
-                </div>
-            </div>
 
-            <div class="controls">
-                <label>Nivel</label>
-                <select id="levelSelect">
-                    <option value="1">Fácil (6 pares)</option>
-                    <option value="2">Medio (12 pares)</option>
-                    <option value="3" selected>Difícil (17 pares)</option>
-                </select>
+<h1>🧠 Memory Game</h1>
 
-                <label>Jugadores</label>
-                <select id="playersSelect">
-                    <option value="1">1 Jugador</option>
-                    <option value="2">2 Jugadores</option>
-                </select>
+<div class="controls">
+  <select id="levelSelect">
+    <option value="1">Nivel Fácil (6)</option>
+    <option value="2">Nivel Medio (12)</option>
+    <option value="3" selected>Nivel Difícil (18)</option>
+  </select>
+  <button id="restartBtn">🔄 Reiniciar</button>
+</div>
 
-                <button id="restartBtn" class="btn-ghost">🔄 Reiniciar</button>
-            </div>
-        </header>
+<div class="status">
+  Movimientos: <span id="moves">0</span> |
+  Tiempo: <span id="timer">00:00</span>
+</div>
 
-        <section class="status">
-            <div class="chip">Turno: <span id="turn">Jugador 1</span></div>
-            <div class="chip">J1: <span id="score1">0</span></div>
-            <div class="chip">J2: <span id="score2">0</span></div>
-            <div class="chip">Movimientos: <span id="moves">0</span></div>
-            <div class="chip">⏱ Tiempo: <span id="timer">00:00</span></div>
-        </section>
+<div id="board" class="board level-3"></div>
 
-        <main>
-            <div id="board" class="board level-3"></div>
-        </main>
+<div id="modal" class="modal">
+  <div class="dialog">
+    <h2 id="modalTitle">¡Bienvenido!</h2>
+    <p id="modalText">Encuentra todos los pares</p>
+    <button id="closeModalBtn">Jugar</button>
+  </div>
+</div>
 
-        <footer>
-            <button id="soundToggle" class="btn-ghost">🔊 Sonido ON</button>
-        </footer>
-    </div>
+<script>
+/* =================== JAVASCRIPT =================== */
+document.addEventListener("DOMContentLoaded", () => {
 
-    <div id="modal" class="modal">
-        <div class="dialog">
-            <h2 id="modalTitle">¡Bienvenido al Memory Game!</h2>
-            <p id="modalText">
-                Este juego usa imágenes locales. Para ver las imágenes:<br><br>
-                1. Guarda este archivo en la MISMA carpeta donde tienes la carpeta "assets"<br>
-                2. La estructura debe ser:<br>
-                   - juego.html (este archivo)<br>
-                   - assets/img/ (tus imágenes 01a.png, 01b.png, etc.)<br><br>
-                ¡Buena suerte!
-            </p>
-            <button id="closeModalBtn" class="primary">🎮 Comenzar Juego</button>
-        </div>
-    </div>
+  const board = document.getElementById("board");
+  const levelSelect = document.getElementById("levelSelect");
+  const restartBtn = document.getElementById("restartBtn");
+  const movesEl = document.getElementById("moves");
+  const timerEl = document.getElementById("timer");
 
-    <script>
-        // ========== JAVASCRIPT ==========
-        (() => {
-            // Elementos del DOM
-            const board = document.getElementById("board");
-            const levelSelect = document.getElementById("levelSelect");
-            const playersSelect = document.getElementById("playersSelect");
-            const restartBtn = document.getElementById("restartBtn");
-            const soundToggle = document.getElementById("soundToggle");
-            
-            const turnEl = document.getElementById("turn");
-            const score1El = document.getElementById("score1");
-            const score2El = document.getElementById("score2");
-            const movesEl = document.getElementById("moves");
-            const timerEl = document.getElementById("timer");
-            
-            const modal = document.getElementById("modal");
-            const modalTitle = document.getElementById("modalTitle");
-            const modalText = document.getElementById("modalText");
-            const closeModalBtn = document.getElementById("closeModalBtn");
-            
-            // Estado del juego
-            let level = 3;
-            let players = 1;
-            let currentPlayer = 1;
-            let scores = [0, 0];
-            let moves = 0;
-            let matches = 0;
-            let soundEnabled = true;
-            let gameStarted = false;
-            
-            let first = null;
-            let lock = false;
-            let seconds = 0;
-            let timer = null;
-            
-            // ======== TUS IMÁGENES REALES ========
-            // Generar rutas para tus 34 imágenes (17 pares)
-            const images = [];
-            for (let i = 1; i <= 17; i++) {
-                const num = String(i).padStart(2, "0");
-                images.push(assets/img/${num}a.png);
-                images.push(assets/img/${num}b.png);
-            }
-            
-            // Configuración de niveles
-            const levelConfig = {
-                1: 6,   // Fácil: 6 pares (usa primeras 12 imágenes)
-                2: 12,  // Medio: 12 pares (usa primeras 24 imágenes)
-                3: 17   // Difícil: 17 pares (usa todas 34 imágenes)
-            };
-            
-            // ========== FUNCIONES AUXILIARES ==========
-            
-            function format(seconds) {
-                const mins = Math.floor(seconds / 60).toString().padStart(2, "0");
-                const secs = (seconds % 60).toString().padStart(2, "0");
-                return ${mins}:${secs};
-            }
-            
-            function shuffle(arr) {
-                for (let i = arr.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [arr[i], arr[j]] = [arr[j], arr[i]];
-                }
-                return arr;
-            }
-            
-            function playSound(type) {
-                if (!soundEnabled) return;
-                
-                try {
-                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    const oscillator = audioContext.createOscillator();
-                    const gainNode = audioContext.createGain();
-                    
-                    oscillator.connect(gainNode);
-                    gainNode.connect(audioContext.destination);
-                    
-                    if (type === 'flip') {
-                        oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-                        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-                    } else if (type === 'match') {
-                        oscillator.frequency.setValueAtTime(1200, audioContext.currentTime);
-                        gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
-                    } else if (type === 'win') {
-                        // Melodía de victoria
-                        const notes = [523, 659, 784, 1047];
-                        let time = audioContext.currentTime;
-                        
-                        notes.forEach((freq, i) => {
-                            const osc = audioContext.createOscillator();
-                            const gain = audioContext.createGain();
-                            osc.connect(gain);
-                            gain.connect(audioContext.destination);
-                            osc.frequency.setValueAtTime(freq, time);
-                            gain.gain.setValueAtTime(0.2, time);
-                            gain.gain.exponentialRampToValueAtTime(0.01, time + 0.2);
-                            osc.start(time);
-                            osc.stop(time + 0.2);
-                            time += 0.15;
-                        });
-                        return;
-                    }
-                    
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-                    oscillator.start();
-                    oscillator.stop(audioContext.currentTime + 0.1);
-                } catch (e) {
-                    console.log("Audio no disponible");
-                }
-            }
-            
-            function updateUI() {
-                turnEl.textContent = Jugador ${currentPlayer};
-                score1El.textContent = scores[0];
-                score2El.textContent = scores[1];
-                movesEl.textContent = moves;
-                
-                // Mostrar/ocultar puntaje del jugador 2 según el modo
-                document.querySelector('.chip:nth-child(3)').style.display = 
-                    players === 2 ? 'flex' : 'none';
-            }
-            
-            function resetTurn(isMatch) {
-                if (isMatch) {
-                    playSound('match');
-                    // Marcar cartas como emparejadas
-                    first.card.classList.add('matched');
-                    first.card.removeEventListener('click', first.clickHandler);
-                    
-                    const currentCard = document.querySelector('.card.flipped:not(.matched)');
-                    if (currentCard) {
-                        currentCard.classList.add('matched');
-                        currentCard.removeEventListener('click', () => {});
-                    }
-                } else {
-                    // Cambiar turno si hay 2 jugadores
-                    if (players === 2) {
-                        currentPlayer = currentPlayer === 1 ? 2 : 1;
-                    }
-                }
-                
-                first = null;
-                lock = false;
-                updateUI();
-            }
-            
-            function endGame() {
-                clearInterval(timer);
-                playSound('win');
-                
-                let winnerText = '';
-                const time = format(seconds);
-                
-                if (players === 1) {
-                    winnerText = `¡Felicidades!<br>Completaste el nivel ${level === 1 ? 'Fácil' : level === 2 ? 'Medio' : 'Difícil'} en:<br>
-                                 <strong>${moves} movimientos</strong> y <strong>${time}</strong><br><br>
-                                 ¡Excelente trabajo!`;
-                } else {
-                    if (scores[0] > scores[1]) {
-                        winnerText = `¡Jugador 1 gana!<br><strong>${scores[0]} a ${scores[1]}</strong><br><br>
-                                     Tiempo: ${time} • Movimientos: ${moves}`;
-                    } else if (scores[1] > scores[0]) {
-                        winnerText = `¡Jugador 2 gana!<br><strong>${scores[1]} a ${scores[0]}</strong><br><br>
-                                     Tiempo: ${time} • Movimientos: ${moves}`;
-                    } else {
-                        winnerText = `¡Empate!<br>Ambos tienen <strong>${scores[0]} puntos</strong><br><br>
-                                     Tiempo: ${time} • Movimientos: ${moves}`;
-                    }
-                }
-                
-                modalTitle.textContent = '¡Juego Completado! 🏆';
-                modalText.innerHTML = winnerText;
-                modal.classList.add('show');
-            }
-            
-            function flip(card, imgSrc) {
-                if (lock || card.classList.contains("flipped") || card.classList.contains("matched")) return;
-                
-                playSound('flip');
-                card.classList.add("flipped");
-                
-                if (!first) {
-                    first = { 
-                        card, 
-                        imgSrc,
-                        clickHandler: () => flip(card, imgSrc)
-                    };
-                    return;
-                }
-                
-                lock = true;
-                moves++;
-                
-                if (first.imgSrc === imgSrc) {
-                    scores[currentPlayer - 1]++;
-                    matches++;
-                    resetTurn(true);
-                    if (matches === levelConfig[level]) {
-                        setTimeout(endGame, 800);
-                    }
-                } else {
-                    setTimeout(() => {
-                        first.card.classList.remove("flipped");
-                        card.classList.remove("flipped");
-                        resetTurn(false);
-                    }, 1000);
-                }
-                
-                updateUI();
-            }
-            
-            function startGame() {
-                // Limpiar tablero
-                board.innerHTML = "";
-                board.className = board level-${level};
-                
-                // Reiniciar estado
-                scores = [0, 0];
-                currentPlayer = 1;
-                moves = 0;
-                matches = 0;
-                seconds = 0;
-                first = null;
-                lock = false;
-                
-                // Reiniciar timer
-                clearInterval(timer);
-                timerEl.textContent = "00:00";
-                if (gameStarted) {
-                    timer = setInterval(() => {
-                        seconds++;
-                        timerEl.textContent = format(seconds);
-                    }, 1000);
-                }
-                
-                // Actualizar UI
-                updateUI();
-                
-                // Obtener imágenes según el nivel
-                const pairsNeeded = levelConfig[level];
-                const selectedImages = images.slice(0, pairsNeeded * 2); // Pares * 2 (cada par tiene 2 imágenes)
-                const shuffledImages = shuffle([...selectedImages]);
-                
-                // Crear cartas con imágenes reales
-                shuffledImages.forEach((imgSrc, index) => {
-                    const card = document.createElement("div");
-                    card.className = "card";
-                    card.innerHTML = `
-                        <div class="card-inner">
-                            <div class="card-face card-back">?</div>
-                            <div class="card-face card-front">
-                                <img src="${imgSrc}" alt="Carta ${index + 1}" 
-                                     onerror="this.onerror=null; this.style.display='none'; this.parentNode.innerHTML='<div style=\'font-size: 40px; padding: 20px;\'>🎴</div>';">
-                            </div>
-                        </div>`;
-                    
-                    card.addEventListener("click", () => flip(card, imgSrc));
-                    board.appendChild(card);
-                });
-                
-                gameStarted = true;
-            }
-            
-            // ========== EVENT LISTENERS ==========
-            
-            levelSelect.addEventListener("change", (e) => {
-                level = parseInt(e.target.value);
-                startGame();
-            });
-            
-            playersSelect.addEventListener("change", (e) => {
-                players = parseInt(e.target.value);
-                startGame();
-            });
-            
-            restartBtn.addEventListener("click", () => {
-                startGame();
-                modalTitle.textContent = "¡Nuevo Juego!";
-                modalText.textContent = "El juego se ha reiniciado. ¡Buena suerte!";
-                modal.classList.add('show');
-            });
-            
-            soundToggle.addEventListener("click", () => {
-                soundEnabled = !soundEnabled;
-                soundToggle.textContent = soundEnabled ? "🔊 Sonido ON" : "🔇 Sonido OFF";
-                soundToggle.style.color = soundEnabled ? "var(--accent)" : "#94a3b8";
-            });
-            
-            closeModalBtn.addEventListener("click", () => {
-                modal.classList.remove('show');
-                if (!gameStarted) {
-                    startGame();
-                }
-            });
-            
-            // Cerrar modal con ESC
-            document.addEventListener("keydown", (e) => {
-                if (e.key === "Escape" && modal.classList.contains('show')) {
-                    modal.classList.remove('show');
-                }
-            });
-            
-            // ========== INICIALIZACIÓN ==========
-            
-            // Mostrar instrucciones iniciales
-            setTimeout(() => {
-                modal.classList.add('show');
-            }, 300);
-            
-        })();
-    </script>
+  const modal = document.getElementById("modal");
+  const modalTitle = document.getElementById("modalTitle");
+  const modalText = document.getElementById("modalText");
+  const closeModalBtn = document.getElementById("closeModalBtn");
+
+  const images = [
+    "https://cdn-icons-png.flaticon.com/128/1998/1998610.png",
+    "https://cdn-icons-png.flaticon.com/128/1998/1998610.png",
+    "https://cdn-icons-png.flaticon.com/128/1998/1998618.png",
+    "https://cdn-icons-png.flaticon.com/128/1998/1998618.png",
+    "https://cdn-icons-png.flaticon.com/128/3069/3069172.png",
+    "https://cdn-icons-png.flaticon.com/128/3069/3069172.png",
+    "https://cdn-icons-png.flaticon.com/128/3069/3069184.png",
+    "https://cdn-icons-png.flaticon.com/128/3069/3069184.png",
+    "https://cdn-icons-png.flaticon.com/128/3069/3069196.png",
+    "https://cdn-icons-png.flaticon.com/128/3069/3069196.png",
+    "https://cdn-icons-png.flaticon.com/128/3069/3069205.png",
+    "https://cdn-icons-png.flaticon.com/128/3069/3069205.png",
+    "https://cdn-icons-png.flaticon.com/128/3082/3082383.png",
+    "https://cdn-icons-png.flaticon.com/128/3082/3082383.png",
+    "https://cdn-icons-png.flaticon.com/128/3082/3082384.png",
+    "https://cdn-icons-png.flaticon.com/128/3082/3082384.png",
+    "https://cdn-icons-png.flaticon.com/128/3082/3082385.png",
+    "https://cdn-icons-png.flaticon.com/128/3082/3082385.png"
+  ];
+
+  const levels = { 1: 6, 2: 12, 3: 18 };
+
+  let first = null;
+  let lock = false;
+  let moves = 0;
+  let matches = 0;
+  let seconds = 0;
+  let timer = null;
+
+  function formatTime(s) {
+    const m = String(Math.floor(s / 60)).padStart(2,"0");
+    const sec = String(s % 60).padStart(2,"0");
+    return `${m}:${sec}`;
+  }
+
+  function shuffle(arr) {
+    return arr.sort(() => Math.random() - 0.5);
+  }
+
+  function endGame() {
+    clearInterval(timer);
+    modalTitle.textContent = "¡Ganaste! 🎉";
+    modalText.innerHTML = `Movimientos: <b>${moves}</b><br>Tiempo: <b>${formatTime(seconds)}</b>`;
+    modal.classList.add("show");
+  }
+
+  function flip(card, img) {
+    if (lock || card.classList.contains("flipped")) return;
+
+    card.classList.add("flipped");
+
+    if (!first) {
+      first = { card, img };
+      return;
+    }
+
+    lock = true;
+    moves++;
+    movesEl.textContent = moves;
+
+    if (first.img === img) {
+      matches++;
+      first = null;
+      lock = false;
+      if (matches === levels[levelSelect.value] / 2) endGame();
+    } else {
+      setTimeout(() => {
+        first.card.classList.remove("flipped");
+        card.classList.remove("flipped");
+        first = null;
+        lock = false;
+      }, 800);
+    }
+  }
+
+  function startGame() {
+    board.innerHTML = "";
+    board.className = `board level-${levelSelect.value}`;
+    moves = 0;
+    matches = 0;
+    seconds = 0;
+    movesEl.textContent = "0";
+    timerEl.textContent = "00:00";
+    clearInterval(timer);
+
+    timer = setInterval(() => {
+      seconds++;
+      timerEl.textContent = formatTime(seconds);
+    }, 1000);
+
+    const selected = shuffle([...images]).slice(0, levels[levelSelect.value]);
+
+    selected.forEach(img => {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <div class="card-inner">
+          <div class="card-face card-back">?</div>
+          <div class="card-face card-front">
+            <img src="${img}">
+          </div>
+        </div>`;
+      card.onclick = () => flip(card, img);
+      board.appendChild(card);
+    });
+  }
+
+  restartBtn.onclick = startGame;
+  closeModalBtn.onclick = () => {
+    modal.classList.remove("show");
+    startGame();
+  };
+
+  modal.classList.add("show");
+});
+</script>
+
 </body>
 </html>
