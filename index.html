@@ -3,283 +3,88 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Memory Game - Con Selector de Categorías</title>
+<title>Memory Game</title>
 
 <style>
-/* =================== CSS ESENCIAL Y DE JUEGO =================== */
 body {
-  font-family: 'Arial', sans-serif;
+  font-family: Arial, sans-serif;
   background: linear-gradient(135deg, #1f2937, #111827);
-  color: #f9fafb;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px;
-  min-height: 100vh;
+  color: #fff;
   margin: 0;
-  box-sizing: border-box;
+  padding: 20px;
+  text-align: center;
 }
 
 h1 {
   color: #fbbf24;
-  margin-bottom: 20px;
-  text-shadow: 0 0 5px rgba(251, 191, 36, 0.5);
 }
 
-.game-header {
-  width: 100%;
-  max-width: 900px;
-  background: rgba(31, 41, 55, 0.8);
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-  margin-bottom: 20px;
-}
-
-/* --- Selectores y Controles --- */
-.controls {
-  margin: 15px 0 20px;
-  display: flex;
-  gap: 15px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-#levelSelect, #restartBtn {
-  padding: 10px 20px;
-  border-radius: 8px;
-  border: none;
-  font-size: 1rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.3s, transform 0.1s;
-}
-
-#levelSelect {
-  background-color: #374151;
-  color: white;
-  appearance: none;
-  padding-right: 30px; /* Espacio para el indicador de flecha */
-}
-
-#restartBtn {
-  background-color: #6366f1;
-  color: white;
-}
-
-#restartBtn:hover {
-  background-color: #4f46e5;
-  transform: translateY(-1px);
-}
-
-/* --- Stats --- */
-.stats-container {
-  display: flex;
-  justify-content: space-around;
-  margin-top: 15px;
-  padding-top: 15px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.stat {
-  font-size: 1.1rem;
-  font-weight: 500;
-  color: #d1d5db;
-}
-
-.stat-value {
-  color: #fbbf24;
-  font-weight: bold;
-  margin-left: 5px;
-}
-
-/* --- Categoría Selector (Ya incluido en tu código original) --- */
-.category-selector {
+.controls, .category-selector {
   display: flex;
   gap: 10px;
   justify-content: center;
-  margin-bottom: 15px;
   flex-wrap: wrap;
+  margin-bottom: 15px;
 }
 
-.category-btn {
-  padding: 8px 16px;
-  border-radius: 20px;
-  border: 2px solid transparent;
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
+button, select {
+  padding: 10px 15px;
+  border-radius: 8px;
+  border: none;
   cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: 600;
-  flex-grow: 1; /* Permite que los botones crezcan si hay espacio */
-  max-width: 150px;
-}
-
-.category-btn:hover {
-  background: rgba(251, 191, 36, 0.2);
-  transform: translateY(-2px);
+  font-weight: bold;
 }
 
 .category-btn.active {
-  background: linear-gradient(135deg, #6366f1, #9333ea);
-  border-color: #fbbf24;
-  box-shadow: 0 4px 12px rgba(147, 51, 234, 0.3);
-}
-
-/* =================== TABLERO Y CARTAS =================== */
-.board-container {
-  width: 100%;
-  max-width: 900px;
-  perspective: 1000px; /* Para efecto 3D flip */
+  background: #6366f1;
+  color: white;
 }
 
 .board {
   display: grid;
   gap: 10px;
-  padding: 20px;
-  background: rgba(31, 41, 55, 0.6);
-  border-radius: 12px;
-  box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.5);
+  max-width: 900px;
+  margin: auto;
 }
 
-/* Configuración de Grillas por Nivel */
-.board.level-1 {
-  grid-template-columns: repeat(3, 1fr);
-}
-.board.level-2 {
-  grid-template-columns: repeat(4, 1fr);
-}
-.board.level-3 {
-  grid-template-columns: repeat(6, 1fr);
-}
+.board.level-1 { grid-template-columns: repeat(3, 1fr); }
+.board.level-2 { grid-template-columns: repeat(4, 1fr); }
+.board.level-3 { grid-template-columns: repeat(6, 1fr); }
 
-/* --- Carta --- */
 .card {
-  height: 120px; /* Altura predeterminada */
-  max-height: 120px;
-  position: relative;
-  transform-style: preserve-3d;
+  height: 120px;
+  background: #6366f1;
+  border-radius: 10px;
   cursor: pointer;
-  transition: transform 0.6s ease;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-/* Ajuste de altura para pantallas pequeñas */
-@media (max-width: 600px) {
-  .card {
-    height: 80px;
-  }
-}
-
-.card.flipped, .card.matched {
-  transform: rotateY(180deg);
-}
-
-.card-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  text-align: center;
-  transition: transform 0.6s;
   transform-style: preserve-3d;
+  transition: transform 0.6s;
+  position: relative;
 }
+
+.card.flipped { transform: rotateY(180deg); }
 
 .card-face {
   position: absolute;
   width: 100%;
   height: 100%;
   backface-visibility: hidden;
-  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2rem;
-  font-weight: bold;
-}
-
-.card-back {
-  background-color: #6366f1;
-  color: white;
-  border: 3px solid #fbbf24;
-  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
 .card-front {
-  background-color: #f9fafb;
   transform: rotateY(180deg);
-  padding: 10px;
+  background: #f9fafb;
 }
 
 .card-front img {
   max-width: 80%;
   max-height: 80%;
-  object-fit: contain;
 }
 
-.card.matched .card-back {
-  background-color: #10b981; /* Verde al hacer match */
-  color: #111827;
-}
-
-/* =================== MODAL =================== */
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.7);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modal.show {
-  display: flex;
-}
-
-.dialog {
-  background: #1f2937;
-  padding: 30px;
-  border-radius: 15px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  text-align: center;
-  max-width: 400px;
-  width: 90%;
-  transform: scale(0.9);
-  transition: transform 0.3s ease;
-}
-
-.modal.show .dialog {
-  transform: scale(1);
-}
-
-#modalTitle {
-  color: #fbbf24;
-  margin-top: 0;
-  margin-bottom: 15px;
-}
-
-#modalText {
-  color: #d1d5db;
-  margin-bottom: 25px;
-}
-
-#closeModalBtn {
-  background-color: #9333ea;
-  color: white;
-  padding: 12px 25px;
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-#closeModalBtn:hover {
-  background-color: #7e22ce;
+.stats {
+  margin: 10px 0;
 }
 </style>
 </head>
@@ -288,401 +93,160 @@ h1 {
 
 <h1>🧠 Memory Game</h1>
 
-<div class="game-header">
-  <div class="category-selector">
-    <button class="category-btn active" data-category="emojis">😊 Emojis</button>
-    <button class="category-btn" data-category="animales">🐶 Animales</button>
-    <button class="category-btn" data-category="comida">🍕 Comida</button>
-    <button class="category-btn" data-category="deportes">⚽ Deportes</button>
-    <button class="category-btn" data-category="banderas">🚩 Banderas</button>
-  </div>
-  
-  <div class="controls">
-    <select id="levelSelect">
-      <option value="1">Nivel Fácil (3x2)</option>
-      <option value="2">Nivel Medio (4x3)</option>
-      <option value="3" selected>Nivel Difícil (6x3)</option>
-    </select>
-    <button id="restartBtn">🔄 Reiniciar Juego</button>
-  </div>
-  
-  <div class="stats-container">
-    <div class="stat">
-      Movimientos: <span id="moves" class="stat-value">0</span>
-    </div>
-    <div class="stat">
-      Tiempo: <span id="timer" class="stat-value">00:00</span>
-    </div>
-    <div class="stat">
-      Pares: <span id="pairs" class="stat-value">0/9</span>
-    </div>
-  </div>
+<div class="category-selector">
+  <button class="category-btn active" data-cat="emojis">😊 Emojis</button>
+  <button class="category-btn" data-cat="animales">🐶 Animales</button>
+  <button class="category-btn" data-cat="comida">🍕 Comida</button>
 </div>
 
-<div class="board-container">
-  <div id="board" class="board level-3"></div>
+<div class="controls">
+  <select id="level">
+    <option value="1">Fácil 3x2</option>
+    <option value="2">Medio 4x3</option>
+    <option value="3" selected>Difícil 6x3</option>
+  </select>
+  <button id="restart">🔄 Reiniciar</button>
 </div>
 
-<div id="modal" class="modal">
-  <div class="dialog">
-    <h2 id="modalTitle">¡Bienvenido al Memory Game!</h2>
-    <p id="modalText">Selecciona una categoría y un nivel para comenzar.</p>
-    <button id="closeModalBtn">🎮 Comenzar Juego</button>
-  </div>
+<div class="stats">
+  Movimientos: <span id="moves">0</span> |
+  Tiempo: <span id="time">00:00</span> |
+  Pares: <span id="pairs">0</span>
 </div>
+
+<div id="board" class="board level-3"></div>
 
 <script>
-/* =================== JAVASCRIPT CORREGIDO =================== */
-document.addEventListener("DOMContentLoaded", () => {
-  // Elementos del DOM
-  const board = document.getElementById("board");
-  const levelSelect = document.getElementById("levelSelect");
-  const restartBtn = document.getElementById("restartBtn");
-  const movesEl = document.getElementById("moves");
-  const timerEl = document.getElementById("timer");
-  const pairsEl = document.getElementById("pairs");
-  const categoryBtns = document.querySelectorAll(".category-btn");
-  
-  const modal = document.getElementById("modal");
-  const modalTitle = document.getElementById("modalTitle");
-  const modalText = document.getElementById("modalText");
-  const closeModalBtn = document.getElementById("closeModalBtn");
-  
-  // BASE DE DATOS DE IMÁGENES POR CATEGORÍA (Se mantiene tu base de datos)
-  const imageCategories = {
-    emojis: [
-      "https://cdn-icons-png.flaticon.com/128/2583/2583434.png", // Estrella
-      "https://cdn-icons-png.flaticon.com/128/2583/2583514.png", // Corazón
-      "https://cdn-icons-png.flaticon.com/128/2583/2583510.png", // Sol
-      "https://cdn-icons-png.flaticon.com/128/2583/2583438.png", // Luna
-      "https://cdn-icons-png.flaticon.com/128/2583/2583452.png", // Nube
-      "https://cdn-icons-png.flaticon.com/128/2583/2583414.png", // Flor
-      "https://cdn-icons-png.flaticon.com/128/2583/2583474.png", // Copa
-      "https://cdn-icons-png.flaticon.com/128/2583/2583403.png", // Campana
-      "https://cdn-icons-png.flaticon.com/128/2583/2583457.png"  // Regalo
-    ],
-    animales: [
-      "https://cdn-icons-png.flaticon.com/128/1998/1998610.png", // Gato
-      "https://cdn-icons-png.flaticon.com/128/1998/1998618.png", // Perro
-      "https://cdn-icons-png.flaticon.com/128/3069/3069172.png", // León
-      "https://cdn-icons-png.flaticon.com/128/3069/3069184.png", // Elefante
-      "https://cdn-icons-png.flaticon.com/128/3069/3069196.png", // Pájaro
-      "https://cdn-icons-png.flaticon.com/128/3069/3069205.png", // Pez
-      "https://cdn-icons-png.flaticon.com/128/3082/3082383.png", // Mariposa
-      "https://cdn-icons-png.flaticon.com/128/3082/3082384.png", // Abeja
-      "https://cdn-icons-png.flaticon.com/128/3082/3082385.png"  // Tortuga
-    ],
-    comida: [
-      "https://cdn-icons-png.flaticon.com/128/3082/3082386.png", // Manzana
-      "https://cdn-icons-png.flaticon.com/128/3082/3082387.png", // Banana
-      "https://cdn-icons-png.flaticon.com/128/3082/3082388.png", // Naranja
-      "https://cdn-icons-png.flaticon.com/128/3082/3082389.png", // Uvas
-      "https://cdn-icons-png.flaticon.com/128/3082/3082390.png", // Fresa
-      "https://cdn-icons-png.flaticon.com/128/3082/3082391.png", // Pizza
-      "https://cdn-icons-png.flaticon.com/128/3082/3082392.png", // Hamburguesa
-      "https://cdn-icons-png.flaticon.com/128/3082/3082393.png", // Helado
-      "https://cdn-icons-png.flaticon.com/128/3082/3082394.png"  // Pastel
-    ],
-    deportes: [
-      "https://cdn-icons-png.flaticon.com/128/857/857455.png",   // Fútbol (Hay iconos repetidos, esto causará problemas en el juego)
-      "https://cdn-icons-png.flaticon.com/128/857/857462.png",   // Baloncesto
-      "https://cdn-icons-png.flaticon.com/128/857/857419.png",   // Tenis
-      "https://cdn-icons-png.flaticon.com/128/857/857448.png",   // Béisbol (Corregido: era igual a Fútbol)
-      "https://cdn-icons-png.flaticon.com/128/857/857492.png",   // Natación
-      "https://cdn-icons-png.flaticon.com/128/857/857423.png",   // Ciclismo (Corregido: era igual a Fútbol)
-      "https://cdn-icons-png.flaticon.com/128/857/857519.png",   // Esquí
-      "https://cdn-icons-png.flaticon.com/128/857/857500.png",   // Golf
-      "https://cdn-icons-png.flaticon.com/128/857/857418.png"    // Boxeo
-    ],
-    banderas: [
-      "https://cdn-icons-png.flaticon.com/128/197/197571.png",   // España
-      "https://cdn-icons-png.flaticon.com/128/197/197484.png",   // Argentina
-      "https://cdn-icons-png.flaticon.com/128/197/197375.png",   // México
-      "https://cdn-icons-png.flaticon.com/128/197/197576.png",   // USA
-      "https://cdn-icons-png.flaticon.com/128/197/197517.png",   // Francia
-      "https://cdn-icons-png.flaticon.com/128/197/197582.png",   // Italia
-      "https://cdn-icons-png.flaticon.com/128/197/197608.png",   // Brasil
-      "https://cdn-icons-png.flaticon.com/128/197/197604.png",   // Japón
-      "https://cdn-icons-png.flaticon.com/128/197/197593.png"    // Alemania
-    ]
-  };
-  
-  // Configuración de niveles
-  const levels = {
-    1: { pairs: 3, cols: 3, rows: 2, total: 6 },
-    2: { pairs: 6, cols: 4, rows: 3, total: 12 },
-    3: { pairs: 9, cols: 6, rows: 3, total: 18 }
-  };
-  
-  // Variables del juego
-  let firstCard = null;
-  let secondCard = null; // Variable agregada para comparación
-  let lockBoard = false;
-  let moves = 0;
-  let matches = 0;
-  let seconds = 0;
-  let timer = null;
-  let gameStarted = false;
-  let currentCategory = "emojis"; // Categoría por defecto
-  
-  // Inicializar nivel
-  let currentLevel = parseInt(levelSelect.value); // Obtener el nivel seleccionado al inicio
+const images = {
+  emojis: [
+    "https://cdn-icons-png.flaticon.com/128/2583/2583434.png",
+    "https://cdn-icons-png.flaticon.com/128/2583/2583514.png",
+    "https://cdn-icons-png.flaticon.com/128/2583/2583510.png",
+    "https://cdn-icons-png.flaticon.com/128/2583/2583438.png",
+    "https://cdn-icons-png.flaticon.com/128/2583/2583452.png",
+    "https://cdn-icons-png.flaticon.com/128/2583/2583414.png",
+    "https://cdn-icons-png.flaticon.com/128/2583/2583474.png",
+    "https://cdn-icons-png.flaticon.com/128/2583/2583403.png",
+    "https://cdn-icons-png.flaticon.com/128/2583/2583457.png"
+  ],
+  animales: [
+    "https://cdn-icons-png.flaticon.com/128/1998/1998610.png",
+    "https://cdn-icons-png.flaticon.com/128/1998/1998618.png",
+    "https://cdn-icons-png.flaticon.com/128/3069/3069172.png",
+    "https://cdn-icons-png.flaticon.com/128/3069/3069184.png",
+    "https://cdn-icons-png.flaticon.com/128/3069/3069196.png",
+    "https://cdn-icons-png.flaticon.com/128/3069/3069205.png",
+    "https://cdn-icons-png.flaticon.com/128/3082/3082383.png",
+    "https://cdn-icons-png.flaticon.com/128/3082/3082384.png",
+    "https://cdn-icons-png.flaticon.com/128/3082/3082385.png"
+  ],
+  comida: [
+    "https://cdn-icons-png.flaticon.com/128/3082/3082386.png",
+    "https://cdn-icons-png.flaticon.com/128/3082/3082387.png",
+    "https://cdn-icons-png.flaticon.com/128/3082/3082388.png",
+    "https://cdn-icons-png.flaticon.com/128/3082/3082389.png",
+    "https://cdn-icons-png.flaticon.com/128/3082/3082390.png",
+    "https://cdn-icons-png.flaticon.com/128/3082/3082391.png",
+    "https://cdn-icons-png.flaticon.com/128/3082/3082392.png",
+    "https://cdn-icons-png.flaticon.com/128/3082/3082393.png",
+    "https://cdn-icons-png.flaticon.com/128/3082/3082394.png"
+  ]
+};
 
-  // Formatear tiempo
-  function formatTime(seconds) {
-    const minutes = String(Math.floor(seconds / 60)).padStart(2, "0");
-    const secs = String(seconds % 60).padStart(2, "0");
-    return ${minutes}:${secs};
-  }
-  
-  // Mezclar array
-  function shuffleArray(array) {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
-  }
-  
-  // Actualizar contador de pares
-  function updatePairs() {
-    pairsEl.textContent = ${matches}/${levels[currentLevel].pairs};
-  }
-  
-  // Función de reseteo para el par
-  function unflipCards() {
-    lockBoard = true;
-    setTimeout(() => {
-        firstCard.card.classList.remove("flipped");
-        secondCard.card.classList.remove("flipped");
-        resetBoard();
-    }, 1000);
+const levels = { 1:3, 2:6, 3:9 };
+
+let first = null, lock = false, moves = 0, matches = 0;
+let category = "emojis";
+let level = 3;
+let time = 0, timer;
+
+const board = document.getElementById("board");
+
+function shuffle(a) {
+  return [...a].sort(() => Math.random() - 0.5);
+}
+
+function start() {
+  board.innerHTML = "";
+  board.className = `board level-${level}`;
+  first = null;
+  lock = false;
+  moves = matches = time = 0;
+  clearInterval(timer);
+
+  document.getElementById("moves").textContent = 0;
+  document.getElementById("pairs").textContent = `0/${levels[level]}`;
+  document.getElementById("time").textContent = "00:00";
+
+  timer = setInterval(() => {
+    time++;
+    document.getElementById("time").textContent =
+      String(Math.floor(time/60)).padStart(2,"0")+":"+
+      String(time%60).padStart(2,"0");
+  },1000);
+
+  const imgs = shuffle(images[category]).slice(0, levels[level]);
+  shuffle([...imgs, ...imgs]).forEach(img => {
+    const c = document.createElement("div");
+    c.className = "card";
+    c.dataset.img = img;
+    c.innerHTML = `
+      <div class="card-face card-back">?</div>
+      <div class="card-face card-front">
+        <img src="${img}">
+      </div>`;
+    c.onclick = () => flip(c);
+    board.appendChild(c);
+  });
+}
+
+function flip(card) {
+  if (lock || card === first || card.classList.contains("flipped")) return;
+
+  card.classList.add("flipped");
+
+  if (!first) {
+    first = card;
+    return;
   }
 
-  // Función de match
-  function disableCards() {
+  moves++;
+  document.getElementById("moves").textContent = moves;
+
+  if (first.dataset.img === card.dataset.img) {
     matches++;
-    updatePairs();
+    document.getElementById("pairs").textContent =
+      `${matches}/${levels[level]}`;
+    first = null;
+  } else {
+    lock = true;
+    setTimeout(() => {
+      card.classList.remove("flipped");
+      first.classList.remove("flipped");
+      first = null;
+      lock = false;
+    }, 800);
+  }
+}
 
-    firstCard.card.classList.add("matched");
-    secondCard.card.classList.add("matched");
+document.getElementById("restart").onclick = start;
 
-    resetBoard();
-    
-    if (matches === levels[currentLevel].pairs) {
-        setTimeout(endGame, 500);
-    }
-  }
+document.getElementById("level").onchange = e => {
+  level = +e.target.value;
+  start();
+};
 
-  // Reseteo de variables de volteo
-  function resetBoard() {
-      [firstCard, secondCard] = [null, null];
-      lockBoard = false;
-  }
-  
-  // Lógica principal de comparación
-  function checkMatch() {
-    // La imagen de comparación se obtiene del atributo data-image-url
-    const isMatch = firstCard.img === secondCard.img;
-
-    if (isMatch) {
-      disableCards();
-    } else {
-      unflipCards();
-    }
-  }
-
-  // Cambiar categoría
-  function changeCategory(category) {
-    // 1. Actualizar botones activos
-    categoryBtns.forEach(btn => {
-      btn.classList.remove("active");
-      if (btn.dataset.category === category) {
-        btn.classList.add("active");
-      }
-    });
-    
-    // 2. Si hay un juego en curso, preguntar
-    if (gameStarted && moves > 0 && currentCategory !== category) {
-      if (confirm(¿Cambiar a categoría "${category}"? Se perderá el progreso actual.)) {
-        currentCategory = category;
-        startGame();
-      } else {
-        // 3. Si el usuario cancela, revertir el botón activo al original
-        categoryBtns.forEach(btn => {
-          btn.classList.remove("active");
-          if (btn.dataset.category === currentCategory) {
-            btn.classList.add("active");
-          }
-        });
-      }
-    } else {
-      // 4. Si el juego no ha empezado, cambiar y empezar.
-      currentCategory = category;
-      startGame();
-    }
-  }
-  
-  // Finalizar juego
-  function endGame() {
-    clearInterval(timer);
-    gameStarted = false;
-    
-    const timeScore = Math.max(0, 5000 - (seconds * 10));
-    const movesScore = Math.max(0, 3000 - (moves * 20));
-    const totalScore = timeScore + movesScore + (currentLevel * 1000);
-    
-    modalTitle.textContent = "¡Felicidades! 🎉";
-    modalText.innerHTML = `
-      <div style="margin-bottom: 15px;">
-        <strong>¡Completaste el nivel ${currentLevel}!</strong><br>
-        <small>Categoría: ${currentCategory.toUpperCase()}</small>
-      </div>
-      <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; margin-bottom: 15px;">
-        <div>Movimientos: <b>${moves}</b></div>
-        <div>Tiempo: <b>${formatTime(seconds)}</b></div>
-        <div>Puntuación: <b style="color:#fbbf24">${totalScore.toLocaleString()}</b></div>
-      </div>
-      <div>Prueba otra categoría o reinicia para jugar otra vez.</div>
-    `;
-    
-    modal.classList.add("show");
-  }
-  
-  // Voltear carta
-  function flipCard(card, img) {
-    // Evitar si el tablero está bloqueado, si la carta ya está volteada o si ya hizo match
-    if (lockBoard || card.classList.contains("flipped")) {
-      return;
-    }
-    
-    // Iniciar el temporizador
-    if (!gameStarted) {
-      gameStarted = true;
-      timer = setInterval(() => {
-        seconds++;
-        timerEl.textContent = formatTime(seconds);
-      }, 1000);
-    }
-    
-    card.classList.add("flipped");
-    
-    if (!firstCard) {
-      // Primera carta
-      firstCard = { card, img };
-      return;
-    }
-    
-    // Segunda carta
-    secondCard = { card, img };
-    moves++;
-    movesEl.textContent = moves;
-    
-    checkMatch();
-  }
-  
-  // Iniciar nuevo juego
-  function startGame() {
-    board.innerHTML = "";
-    currentLevel = parseInt(levelSelect.value); // Asegura que el nivel actual está actualizado
-    board.className = board level-${currentLevel};
-    
-    // Reiniciar variables
-    resetBoard(); // Resetear firstCard y secondCard a null
-    lockBoard = false;
-    moves = 0;
-    matches = 0;
-    seconds = 0;
-    gameStarted = false;
-    
-    // Actualizar UI
-    movesEl.textContent = "0";
-    timerEl.textContent = "00:00";
-    updatePairs();
-    
-    // Detener timer anterior
-    clearInterval(timer);
-    
-    // Obtener imágenes de la categoría actual
-    const categoryImages = imageCategories[currentCategory];
-    
-    // CORRECCIÓN IMPORTANTE: Asegurarse de que haya suficientes imágenes
-    if (levels[currentLevel].pairs > categoryImages.length) {
-        console.error("No hay suficientes imágenes para este nivel y categoría.");
-        // Opcional: mostrar un error al usuario y volver al nivel más bajo
-        levelSelect.value = "1";
-        currentLevel = 1;
-        board.className = board level-1;
-        alert("No hay suficientes imágenes para el nivel seleccionado en esta categoría. Se ha cambiado a Nivel Fácil (3x2).");
-    }
-    
-    const levelImages = shuffleArray([...categoryImages]).slice(0, levels[currentLevel].pairs);
-    const gameImages = shuffleArray([...levelImages, ...levelImages]);
-    
-    // Crear cartas
-    gameImages.forEach((img, index) => {
-      const card = document.createElement("div");
-      card.className = "card";
-      // Añadir el URL de la imagen como data-attribute para la función flipCard
-      card.dataset.imageUrl = img; 
-      card.innerHTML = `
-        <div class="card-inner">
-          <div class="card-face card-back">?</div>
-          <div class="card-face card-front">
-            <img src="${img}" alt="Carta de memoria" loading="lazy">
-          </div>
-        </div>
-      `;
-      
-      // Pasar el elemento de la carta y la URL de la imagen a flipCard
-      card.addEventListener("click", () => flipCard(card, img)); 
-      board.appendChild(card);
-    });
-    
-    // Ocultar modal si está visible
-    modal.classList.remove("show");
-  }
-  
-  // Cambiar nivel
-  function changeLevel() {
-    const newLevel = parseInt(levelSelect.value); // Nivel al que se quiere cambiar
-
-    if (gameStarted && moves > 0 && newLevel !== currentLevel) {
-      if (confirm("¿Cambiar de nivel? Se perderá el progreso actual.")) {
-        currentLevel = newLevel; // Actualizar el nivel antes de empezar
-        startGame();
-      } else {
-        // Si cancela, revertir el selector al nivel actual
-        levelSelect.value = currentLevel.toString(); 
-      }
-    } else if (newLevel !== currentLevel) {
-        currentLevel = newLevel;
-        startGame();
-    }
-  }
-  
-  // Event listeners para categorías
-  categoryBtns.forEach(btn => {
-    btn.addEventListener("click", () => {
-      changeCategory(btn.dataset.category);
-    });
-  });
-  
-  // Otros event listeners
-  restartBtn.addEventListener("click", startGame);
-  levelSelect.addEventListener("change", changeLevel);
-  closeModalBtn.addEventListener("click", () => {
-    modal.classList.remove("show");
-    startGame();
-  });
-  
-  // Iniciar juego (mostrar modal al inicio)
-  modal.classList.add("show");
-  // La llamada a startGame se hará al cerrar el modal, pero la necesitamos aquí
-  // para inicializar variables si se decide no mostrar el modal al inicio.
-  // Por ahora, se llama al cerrar el modal.
+document.querySelectorAll(".category-btn").forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll(".category-btn")
+      .forEach(x => x.classList.remove("active"));
+    b.classList.add("active");
+    category = b.dataset.cat;
+    start();
+  };
 });
+
+start();
 </script>
 
 </body>
