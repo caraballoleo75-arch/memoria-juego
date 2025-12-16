@@ -3,120 +3,47 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Memory Game 3 Niveles</title>
+<title>Memory Game - Con Selector de Categorías</title>
 
 <style>
-/* =================== CSS =================== */
-body {
-  font-family: Arial, sans-serif;
-  background: linear-gradient(180deg,#0f172a,#020617);
-  color: white;
-  text-align: center;
-  margin: 0;
-  padding: 20px;
-}
-
-h1 { margin-bottom: 10px; }
+/* ... (mantén el mismo CSS que antes) ... */
 
 .controls {
-  margin: 10px 0 20px;
+  margin: 15px 0 20px;
   display: flex;
-  gap: 10px;
+  gap: 15px;
   justify-content: center;
   flex-wrap: wrap;
 }
 
-select, button {
-  padding: 8px 14px;
-  border-radius: 8px;
-  border: none;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-button {
-  background: #fbbf24;
-  font-weight: bold;
-}
-
-.status {
-  margin-bottom: 15px;
-  font-size: 14px;
-}
-
-.board {
-  display: grid;
-  gap: 12px;
-  justify-content: center;
-  margin: auto;
-}
-
-.board.level-1 { grid-template-columns: repeat(3, 100px); }
-.board.level-2 { grid-template-columns: repeat(4, 100px); }
-.board.level-3 { grid-template-columns: repeat(6, 90px); }
-
-.card {
-  width: 100px;
-  height: 120px;
-  perspective: 1000px;
-  cursor: pointer;
-}
-
-.card-inner {
-  width: 100%;
-  height: 100%;
-  transition: transform 0.6s;
-  transform-style: preserve-3d;
-}
-
-.card.flipped .card-inner {
-  transform: rotateY(180deg);
-}
-
-.card-face {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: 10px;
-  backface-visibility: hidden;
+.category-selector {
   display: flex;
-  align-items: center;
+  gap: 10px;
   justify-content: center;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
 }
 
-.card-back {
-  background: linear-gradient(135deg,#6366f1,#9333ea);
-  font-size: 36px;
+.category-btn {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 2px solid transparent;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
 }
 
-.card-front {
-  background: white;
-  transform: rotateY(180deg);
+.category-btn:hover {
+  background: rgba(251, 191, 36, 0.2);
+  transform: translateY(-2px);
 }
 
-.card-front img {
-  width: 90%;
-  height: 90%;
-  object-fit: contain;
-}
-
-/* Modal */
-.modal {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.7);
-  align-items: center;
-  justify-content: center;
-}
-
-.modal.show { display: flex; }
-
-.dialog {
-  background: #020617;
-  padding: 25px;
-  border-radius: 15px;
-  max-width: 320px;
+.category-btn.active {
+  background: linear-gradient(135deg, #6366f1, #9333ea);
+  border-color: #fbbf24;
+  box-shadow: 0 4px 12px rgba(147, 51, 234, 0.3);
 }
 </style>
 </head>
@@ -125,160 +52,359 @@ button {
 
 <h1>🧠 Memory Game</h1>
 
-<div class="controls">
-  <select id="levelSelect">
-    <option value="1">Nivel Fácil (6)</option>
-    <option value="2">Nivel Medio (12)</option>
-    <option value="3" selected>Nivel Difícil (18)</option>
-  </select>
-  <button id="restartBtn">🔄 Reiniciar</button>
+<div class="game-header">
+  <!-- Selector de Categorías -->
+  <div class="category-selector">
+    <button class="category-btn active" data-category="emojis">😊 Emojis</button>
+    <button class="category-btn" data-category="animales">🐶 Animales</button>
+    <button class="category-btn" data-category="comida">🍕 Comida</button>
+    <button class="category-btn" data-category="deportes">⚽ Deportes</button>
+    <button class="category-btn" data-category="banderas">🚩 Banderas</button>
+  </div>
+  
+  <div class="controls">
+    <select id="levelSelect">
+      <option value="1">Nivel Fácil (3x2) <span class="level-indicator level-easy">6 Cartas</span></option>
+      <option value="2">Nivel Medio (4x3) <span class="level-indicator level-medium">12 Cartas</span></option>
+      <option value="3" selected>Nivel Difícil (6x3) <span class="level-indicator level-hard">18 Cartas</span></option>
+    </select>
+    <button id="restartBtn">🔄 Reiniciar Juego</button>
+  </div>
+  
+  <div class="stats-container">
+    <div class="stat">
+      Movimientos: <span id="moves" class="stat-value">0</span>
+    </div>
+    <div class="stat">
+      Tiempo: <span id="timer" class="stat-value">00:00</span>
+    </div>
+    <div class="stat">
+      Pares: <span id="pairs" class="stat-value">0/9</span>
+    </div>
+  </div>
 </div>
 
-<div class="status">
-  Movimientos: <span id="moves">0</span> |
-  Tiempo: <span id="timer">00:00</span>
+<div class="board-container">
+  <div id="board" class="board level-3"></div>
 </div>
-
-<div id="board" class="board level-3"></div>
 
 <div id="modal" class="modal">
   <div class="dialog">
-    <h2 id="modalTitle">¡Bienvenido!</h2>
-    <p id="modalText">Encuentra todos los pares</p>
-    <button id="closeModalBtn">Jugar</button>
+    <h2 id="modalTitle">¡Bienvenido al Memory Game!</h2>
+    <p id="modalText">Selecciona una categoría y un nivel para comenzar.</p>
+    <button id="closeModalBtn">🎮 Comenzar Juego</button>
   </div>
 </div>
 
 <script>
-/* =================== JAVASCRIPT =================== */
+/* =================== JAVASCRIPT CON CATEGORÍAS =================== */
 document.addEventListener("DOMContentLoaded", () => {
-
+  // Elementos del DOM
   const board = document.getElementById("board");
   const levelSelect = document.getElementById("levelSelect");
   const restartBtn = document.getElementById("restartBtn");
   const movesEl = document.getElementById("moves");
   const timerEl = document.getElementById("timer");
-
+  const pairsEl = document.getElementById("pairs");
+  const categoryBtns = document.querySelectorAll(".category-btn");
+  
   const modal = document.getElementById("modal");
   const modalTitle = document.getElementById("modalTitle");
   const modalText = document.getElementById("modalText");
   const closeModalBtn = document.getElementById("closeModalBtn");
-
-  const images = [
-    "https://cdn-icons-png.flaticon.com/128/1998/1998610.png",
-    "https://cdn-icons-png.flaticon.com/128/1998/1998610.png",
-    "https://cdn-icons-png.flaticon.com/128/1998/1998618.png",
-    "https://cdn-icons-png.flaticon.com/128/1998/1998618.png",
-    "https://cdn-icons-png.flaticon.com/128/3069/3069172.png",
-    "https://cdn-icons-png.flaticon.com/128/3069/3069172.png",
-    "https://cdn-icons-png.flaticon.com/128/3069/3069184.png",
-    "https://cdn-icons-png.flaticon.com/128/3069/3069184.png",
-    "https://cdn-icons-png.flaticon.com/128/3069/3069196.png",
-    "https://cdn-icons-png.flaticon.com/128/3069/3069196.png",
-    "https://cdn-icons-png.flaticon.com/128/3069/3069205.png",
-    "https://cdn-icons-png.flaticon.com/128/3069/3069205.png",
-    "https://cdn-icons-png.flaticon.com/128/3082/3082383.png",
-    "https://cdn-icons-png.flaticon.com/128/3082/3082383.png",
-    "https://cdn-icons-png.flaticon.com/128/3082/3082384.png",
-    "https://cdn-icons-png.flaticon.com/128/3082/3082384.png",
-    "https://cdn-icons-png.flaticon.com/128/3082/3082385.png",
-    "https://cdn-icons-png.flaticon.com/128/3082/3082385.png"
-  ];
-
-  const levels = { 1: 6, 2: 12, 3: 18 };
-
-  let first = null;
-  let lock = false;
+  
+  // BASE DE DATOS DE IMÁGENES POR CATEGORÍA
+  const imageCategories = {
+    emojis: [
+      "https://cdn-icons-png.flaticon.com/128/2583/2583434.png", // Estrella
+      "https://cdn-icons-png.flaticon.com/128/2583/2583514.png", // Corazón
+      "https://cdn-icons-png.flaticon.com/128/2583/2583510.png", // Sol
+      "https://cdn-icons-png.flaticon.com/128/2583/2583438.png", // Luna
+      "https://cdn-icons-png.flaticon.com/128/2583/2583452.png", // Nube
+      "https://cdn-icons-png.flaticon.com/128/2583/2583414.png", // Flor
+      "https://cdn-icons-png.flaticon.com/128/2583/2583474.png", // Copa
+      "https://cdn-icons-png.flaticon.com/128/2583/2583403.png", // Campana
+      "https://cdn-icons-png.flaticon.com/128/2583/2583457.png"  // Regalo
+    ],
+    
+    animales: [
+      "https://cdn-icons-png.flaticon.com/128/1998/1998610.png", // Gato
+      "https://cdn-icons-png.flaticon.com/128/1998/1998618.png", // Perro
+      "https://cdn-icons-png.flaticon.com/128/3069/3069172.png", // León
+      "https://cdn-icons-png.flaticon.com/128/3069/3069184.png", // Elefante
+      "https://cdn-icons-png.flaticon.com/128/3069/3069196.png", // Pájaro
+      "https://cdn-icons-png.flaticon.com/128/3069/3069205.png", // Pez
+      "https://cdn-icons-png.flaticon.com/128/3082/3082383.png", // Mariposa
+      "https://cdn-icons-png.flaticon.com/128/3082/3082384.png", // Abeja
+      "https://cdn-icons-png.flaticon.com/128/3082/3082385.png"  // Tortuga
+    ],
+    
+    comida: [
+      "https://cdn-icons-png.flaticon.com/128/3082/3082386.png", // Manzana
+      "https://cdn-icons-png.flaticon.com/128/3082/3082387.png", // Banana
+      "https://cdn-icons-png.flaticon.com/128/3082/3082388.png", // Naranja
+      "https://cdn-icons-png.flaticon.com/128/3082/3082389.png", // Uvas
+      "https://cdn-icons-png.flaticon.com/128/3082/3082390.png", // Fresa
+      "https://cdn-icons-png.flaticon.com/128/3082/3082391.png", // Pizza
+      "https://cdn-icons-png.flaticon.com/128/3082/3082392.png", // Hamburguesa
+      "https://cdn-icons-png.flaticon.com/128/3082/3082393.png", // Helado
+      "https://cdn-icons-png.flaticon.com/128/3082/3082394.png"  // Pastel
+    ],
+    
+    deportes: [
+      "https://cdn-icons-png.flaticon.com/128/857/857455.png",   // Fútbol
+      "https://cdn-icons-png.flaticon.com/128/857/857462.png",   // Baloncesto
+      "https://cdn-icons-png.flaticon.com/128/857/857419.png",   // Tenis
+      "https://cdn-icons-png.flaticon.com/128/857/857455.png",   // Béisbol
+      "https://cdn-icons-png.flaticon.com/128/857/857492.png",   // Natación
+      "https://cdn-icons-png.flaticon.com/128/857/857455.png",   // Ciclismo
+      "https://cdn-icons-png.flaticon.com/128/857/857519.png",   // Esquí
+      "https://cdn-icons-png.flaticon.com/128/857/857500.png",   // Golf
+      "https://cdn-icons-png.flaticon.com/128/857/857418.png"    // Boxeo
+    ],
+    
+    banderas: [
+      "https://cdn-icons-png.flaticon.com/128/197/197571.png",   // España
+      "https://cdn-icons-png.flaticon.com/128/197/197484.png",   // Argentina
+      "https://cdn-icons-png.flaticon.com/128/197/197375.png",   // México
+      "https://cdn-icons-png.flaticon.com/128/197/197576.png",   // USA
+      "https://cdn-icons-png.flaticon.com/128/197/197517.png",   // Francia
+      "https://cdn-icons-png.flaticon.com/128/197/197582.png",   // Italia
+      "https://cdn-icons-png.flaticon.com/128/197/197608.png",   // Brasil
+      "https://cdn-icons-png.flaticon.com/128/197/197604.png",   // Japón
+      "https://cdn-icons-png.flaticon.com/128/197/197593.png"    // Alemania
+    ]
+  };
+  
+  // Configuración de niveles
+  const levels = {
+    1: { pairs: 3, cols: 3, rows: 2, total: 6 },
+    2: { pairs: 6, cols: 4, rows: 3, total: 12 },
+    3: { pairs: 9, cols: 6, rows: 3, total: 18 }
+  };
+  
+  // Variables del juego
+  let firstCard = null;
+  let lockBoard = false;
   let moves = 0;
   let matches = 0;
   let seconds = 0;
   let timer = null;
-
-  function formatTime(s) {
-    const m = String(Math.floor(s / 60)).padStart(2,"0");
-    const sec = String(s % 60).padStart(2,"0");
-    return `${m}:${sec}`;
+  let gameStarted = false;
+  let currentCategory = "emojis"; // Categoría por defecto
+  
+  // Formatear tiempo
+  function formatTime(seconds) {
+    const minutes = String(Math.floor(seconds / 60)).padStart(2, "0");
+    const secs = String(seconds % 60).padStart(2, "0");
+    return ${minutes}:${secs};
   }
-
-  function shuffle(arr) {
-    return arr.sort(() => Math.random() - 0.5);
+  
+  // Mezclar array
+  function shuffleArray(array) {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
   }
-
+  
+  // Actualizar contador de pares
+  function updatePairs() {
+    const level = parseInt(levelSelect.value);
+    pairsEl.textContent = ${matches}/${levels[level].pairs};
+  }
+  
+  // Cambiar categoría
+  function changeCategory(category) {
+    // Actualizar botones activos
+    categoryBtns.forEach(btn => {
+      if (btn.dataset.category === category) {
+        btn.classList.add("active");
+      } else {
+        btn.classList.remove("active");
+      }
+    });
+    
+    // Cambiar categoría actual
+    currentCategory = category;
+    
+    // Reiniciar juego con nueva categoría
+    if (gameStarted && moves > 0) {
+      if (confirm(¿Cambiar a categoría ${category}? Se perderá el progreso actual.)) {
+        startGame();
+      } else {
+        // Revertir al botón anterior
+        categoryBtns.forEach(btn => {
+          if (btn.dataset.category === currentCategory) {
+            btn.classList.add("active");
+          }
+        });
+      }
+    } else {
+      startGame();
+    }
+  }
+  
+  // Finalizar juego
   function endGame() {
     clearInterval(timer);
-    modalTitle.textContent = "¡Ganaste! 🎉";
-    modalText.innerHTML = `Movimientos: <b>${moves}</b><br>Tiempo: <b>${formatTime(seconds)}</b>`;
+    gameStarted = false;
+    
+    const level = parseInt(levelSelect.value);
+    const timeScore = Math.max(0, 5000 - (seconds * 10));
+    const movesScore = Math.max(0, 3000 - (moves * 20));
+    const totalScore = timeScore + movesScore + (level * 1000);
+    
+    modalTitle.textContent = "¡Felicidades! 🎉";
+    modalText.innerHTML = `
+      <div style="margin-bottom: 15px;">
+        <strong>¡Completaste el nivel ${level}!</strong><br>
+        <small>Categoría: ${currentCategory}</small>
+      </div>
+      <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+        <div>Movimientos: <b>${moves}</b></div>
+        <div>Tiempo: <b>${formatTime(seconds)}</b></div>
+        <div>Puntuación: <b style="color:#fbbf24">${totalScore.toLocaleString()}</b></div>
+      </div>
+      <div>Prueba otra categoría o reinicia para jugar otra vez.</div>
+    `;
+    
     modal.classList.add("show");
   }
-
-  function flip(card, img) {
-    if (lock || card.classList.contains("flipped")) return;
-
-    card.classList.add("flipped");
-
-    if (!first) {
-      first = { card, img };
+  
+  // Voltear carta
+  function flipCard(card, img) {
+    if (lockBoard || card.classList.contains("flipped") || card.classList.contains("matched")) {
       return;
     }
-
-    lock = true;
+    
+    if (!gameStarted) {
+      gameStarted = true;
+      timer = setInterval(() => {
+        seconds++;
+        timerEl.textContent = formatTime(seconds);
+      }, 1000);
+    }
+    
+    card.classList.add("flipped");
+    
+    if (!firstCard) {
+      firstCard = { card, img };
+      return;
+    }
+    
+    lockBoard = true;
     moves++;
     movesEl.textContent = moves;
-
-    if (first.img === img) {
+    
+    if (firstCard.img === img) {
       matches++;
-      first = null;
-      lock = false;
-      if (matches === levels[levelSelect.value] / 2) endGame();
+      updatePairs();
+      
+      setTimeout(() => {
+        firstCard.card.classList.add("matched");
+        card.classList.add("matched");
+        firstCard = null;
+        lockBoard = false;
+        
+        const level = parseInt(levelSelect.value);
+        if (matches === levels[level].pairs) {
+          setTimeout(endGame, 500);
+        }
+      }, 500);
     } else {
       setTimeout(() => {
-        first.card.classList.remove("flipped");
+        firstCard.card.classList.remove("flipped");
         card.classList.remove("flipped");
-        first = null;
-        lock = false;
-      }, 800);
+        firstCard = null;
+        lockBoard = false;
+      }, 1000);
     }
   }
-
+  
+  // Iniciar nuevo juego
   function startGame() {
     board.innerHTML = "";
-    board.className = `board level-${levelSelect.value}`;
+    const level = parseInt(levelSelect.value);
+    board.className = board level-${level};
+    
+    // Reiniciar variables
+    firstCard = null;
+    lockBoard = false;
     moves = 0;
     matches = 0;
     seconds = 0;
+    gameStarted = false;
+    
+    // Actualizar UI
     movesEl.textContent = "0";
     timerEl.textContent = "00:00";
+    updatePairs();
+    
+    // Detener timer anterior
     clearInterval(timer);
-
-    timer = setInterval(() => {
-      seconds++;
-      timerEl.textContent = formatTime(seconds);
-    }, 1000);
-
-    const selected = shuffle([...images]).slice(0, levels[levelSelect.value]);
-
-    selected.forEach(img => {
+    
+    // Obtener imágenes de la categoría actual
+    const categoryImages = imageCategories[currentCategory];
+    const levelImages = shuffleArray([...categoryImages]).slice(0, levels[level].pairs);
+    const gameImages = shuffleArray([...levelImages, ...levelImages]);
+    
+    // Crear cartas
+    gameImages.forEach((img, index) => {
       const card = document.createElement("div");
       card.className = "card";
+      card.dataset.index = index;
       card.innerHTML = `
         <div class="card-inner">
           <div class="card-face card-back">?</div>
           <div class="card-face card-front">
-            <img src="${img}">
+            <img src="${img}" alt="Carta de memoria" loading="lazy">
           </div>
-        </div>`;
-      card.onclick = () => flip(card, img);
+        </div>
+      `;
+      
+      card.addEventListener("click", () => flipCard(card, img));
       board.appendChild(card);
     });
+    
+    // Ocultar modal si está visible
+    modal.classList.remove("show");
   }
-
-  restartBtn.onclick = startGame;
-  closeModalBtn.onclick = () => {
+  
+  // Cambiar nivel
+  function changeLevel() {
+    const level = parseInt(levelSelect.value);
+    
+    if (gameStarted && moves > 0) {
+      if (confirm("¿Cambiar de nivel? Se perderá el progreso actual.")) {
+        startGame();
+      } else {
+        levelSelect.value = level === 1 ? "2" : level === 2 ? "3" : "1";
+      }
+    } else {
+      startGame();
+    }
+  }
+  
+  // Event listeners para categorías
+  categoryBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      changeCategory(btn.dataset.category);
+    });
+  });
+  
+  // Otros event listeners
+  restartBtn.addEventListener("click", startGame);
+  levelSelect.addEventListener("change", changeLevel);
+  closeModalBtn.addEventListener("click", () => {
     modal.classList.remove("show");
     startGame();
-  };
-
-  modal.classList.add("show");
+  });
+  
+  // Iniciar juego
+  startGame();
 });
 </script>
 
